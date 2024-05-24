@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using RimWorld;
+using SR.ModRimWorld.RaidExtension.Util;
 using Verse;
 using Verse.AI.Group;
 
@@ -45,6 +46,11 @@ namespace SR.ModRimWorld.RaidExtension
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             var map = (Map) parms.target;
+            if(HarmonyUtil.IsSOS2SpaceMap(map))
+            {
+                return false;
+            }
+
             if (!TryResolveParms(parms))
             {
                 return false;

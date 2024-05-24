@@ -10,6 +10,7 @@
 using System.Linq;
 using JetBrains.Annotations;
 using RimWorld;
+using SR.ModRimWorld.RaidExtension.Util;
 using Verse;
 
 namespace SR.ModRimWorld.RaidExtension
@@ -30,6 +31,11 @@ namespace SR.ModRimWorld.RaidExtension
                 return false;
             }
 
+            if (HarmonyUtil.IsSOS2SpaceMap(map))
+            {
+                Log.Error($"{MiscDef.LogTag}target must not be an SOS2 space map.");
+                return false;
+            }
             var isTreeExist = map.IsTreeExist();
             //没有树 无法触发事件
             if (!isTreeExist)

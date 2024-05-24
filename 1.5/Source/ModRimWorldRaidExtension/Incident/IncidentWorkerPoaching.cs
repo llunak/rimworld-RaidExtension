@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using RimWorld;
+using SR.ModRimWorld.RaidExtension.Util;
 using Verse;
 
 namespace SR.ModRimWorld.RaidExtension
@@ -29,6 +30,11 @@ namespace SR.ModRimWorld.RaidExtension
             if (!(parms.target is Map map))
             {
                 Log.Error($"{MiscDef.LogTag}target must be a map.");
+                return false;
+            }
+            if (HarmonyUtil.IsSOS2SpaceMap(map))
+            {
+                Log.Error($"{MiscDef.LogTag}target must not be an SOS2 space map.");
                 return false;
             }
 
