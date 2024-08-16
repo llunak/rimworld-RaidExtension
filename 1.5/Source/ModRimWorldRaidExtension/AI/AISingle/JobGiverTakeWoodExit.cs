@@ -53,7 +53,7 @@ namespace SR.ModRimWorld.RaidExtension
                 true))
             {
                 //其他战利品也是木材 并且不是当前准备搬运的 并且可以保留
-                if (otherSpoils?.def == spoils.def && otherSpoils != spoils && pawn.CanReserve(otherSpoils))
+                if (otherSpoils?.def == spoils.def && otherSpoils != spoils && pawn.CanReserveAndReach(otherSpoils, PathEndMode.ClosestTouch, pawn.NormalMaxDanger()))
                 {
                     job.GetTargetQueue(TargetIndex.A).Add(otherSpoils);
                 }
