@@ -19,7 +19,13 @@ namespace SR.ModRimWorld.RaidExtension
         protected override Job TryGiveJob(Pawn pawn)
         {
             var tree = pawn.FindTree();
-            return tree == null ? null : JobMaker.MakeJob(RimWorld.JobDefOf.CutPlant, tree);
+            if( tree == null )
+                return null;
+            var job = JobMaker.MakeJob(RimWorld.JobDefOf.CutPlant, tree);
+            job.checkOverrideOnExpire = true;
+            job.expiryInterval = 65;
+            job.expireRequiresEnemiesNearby = true;
+            return job;
         }
     }
 }
