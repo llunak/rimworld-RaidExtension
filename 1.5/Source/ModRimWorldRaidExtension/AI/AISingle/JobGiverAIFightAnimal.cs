@@ -78,7 +78,15 @@ namespace SR.ModRimWorld.RaidExtension
             //寻找掩体位置
             if (!TryFindShootingPosition(pawn, out var dest))
             {
-                return null;
+                // If we cannot find a shooting position, the animal is possibly in a closed room.
+                // Try to go there and bash anything that is in the way.
+                var goJob = JobMaker.MakeJob(RimWorld.JobDefOf.Goto, enemyTarget);
+                goJob.expiryInterval = ExpiryInterval_ShooterSucceeded.RandomInRange;
+                goJob.checkOverrideOnExpire = true;
+                goJob.attackDoorIfTargetLost = true;
+                goJob.canBashDoors = true;
+                goJob.collideWithPawns = true;
+                return goJob;
             }
 
             //角色已经在掩体位置了 开枪射击
@@ -91,6 +99,9 @@ namespace SR.ModRimWorld.RaidExtension
             var job = JobMaker.MakeJob(RimWorld.JobDefOf.Goto, dest);
             job.expiryInterval = ExpiryInterval_ShooterSucceeded.RandomInRange;
             job.checkOverrideOnExpire = true;
+            job.attackDoorIfTargetLost = true;
+            job.canBashDoors = true;
+            job.collideWithPawns = true;
             return job;
         }
 
