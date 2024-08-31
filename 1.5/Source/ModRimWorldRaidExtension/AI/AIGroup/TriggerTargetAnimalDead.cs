@@ -27,7 +27,6 @@ namespace SR.ModRimWorld.RaidExtension
             //信号类型不关心
             if (signal.type != TriggerSignalType.Tick)
             {
-                Log.Warning($"{MiscDef.LogTag}signal don't care");
                 return false;
             }
 
