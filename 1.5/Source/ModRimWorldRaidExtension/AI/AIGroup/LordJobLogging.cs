@@ -15,8 +15,9 @@ namespace SR.ModRimWorld.RaidExtension
 {
     public class LordJobLogging : LordJobSiegeBase
     {
-        private const int ExitTime = 2000; //离开时间
+        private const int ExitTime = 2500 * 4; //离开时间
         private const int WaitTime = 500; //集合等待时间
+        private int numTreesCut = 0;
 
         public LordJobLogging()
         {
@@ -49,12 +50,24 @@ namespace SR.ModRimWorld.RaidExtension
             //过渡 伐木到带着木材离开
             var transitionLoggingToTakeWoodExit = new Transition(lordToilLogging, lordToilTakeWoodExit);
             var triggerTicksPassed = new Trigger_TicksPassed(ExitTime);
+            var triggerTreesCut = new Trigger_TickCondition( () => IsEnoughTreesCut(), 250 );
             transitionLoggingToTakeWoodExit.AddTrigger(triggerTicksPassed);
+            transitionLoggingToTakeWoodExit.AddTrigger(triggerTreesCut);
             transitionLoggingToTakeWoodExit.AddPreAction(new TransitionAction_Message(
                 "SrTakeWoodExit".Translate(faction.def.pawnsPlural.CapitalizeFirst(),
                     faction.Name), MessageTypeDefOf.ThreatSmall));
             stateGraph.AddTransition(transitionLoggingToTakeWoodExit);
             return stateGraph;
+        }
+
+        public void NotifyTreeCut()
+        {
+            ++numTreesCut;
+        }
+
+        public bool IsEnoughTreesCut()
+        {
+            return lord.ownedPawns.Count > 0 && numTreesCut > lord.ownedPawns.Count / 2;
         }
     }
 }

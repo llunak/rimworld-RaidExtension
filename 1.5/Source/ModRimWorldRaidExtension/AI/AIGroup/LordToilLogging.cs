@@ -7,6 +7,7 @@
 //    *(__\_\        @Copyright  Copyright (c) 2021, Shadowrabbit
 // ******************************************************************
 
+using Verse;
 using Verse.AI;
 using Verse.AI.Group;
 
@@ -23,6 +24,15 @@ namespace SR.ModRimWorld.RaidExtension
             {
                 pawn.mindState.duty = new PawnDuty(DutyDefOf.SrLogging);
             }
+        }
+
+
+        public override void Notify_PawnJobDone(Pawn p, JobCondition condition)
+        {
+            if( condition != JobCondition.Succeeded || p.CurJob?.def != RimWorld.JobDefOf.CutPlant )
+                return;
+            LordJobLogging logging = lord.LordJob as LordJobLogging;
+            logging?.NotifyTreeCut();
         }
     }
 }
