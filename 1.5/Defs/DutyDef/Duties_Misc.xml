@@ -40,6 +40,7 @@
     <!--偷猎-->
     <DutyDef>
         <defName>SrPoaching</defName>
+        <alwaysShowWeapon>true</alwaysShowWeapon>
         <thinkNode Class="ThinkNode_Priority">
             <subNodes>
                 <li Class="SR.ModRimWorld.RaidExtension.ThinkNode_EnemiesNearby">
