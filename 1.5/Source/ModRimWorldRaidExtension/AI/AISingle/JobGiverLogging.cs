@@ -23,7 +23,7 @@ namespace SR.ModRimWorld.RaidExtension
                 return null;
             var job = JobMaker.MakeJob(RimWorld.JobDefOf.CutPlant, tree);
             job.checkOverrideOnExpire = true;
-            job.expiryInterval = 65;
+            job.expiryInterval = 100;
             job.expireRequiresEnemiesNearby = true;
             return job;
         }
