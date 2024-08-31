@@ -60,7 +60,8 @@ namespace SR.ModRimWorld.RaidExtension
         {
             //验证器 是植物 可以保留 没有燃烧中 角色不是什么树木爱好者 成熟了
             bool SpoilValidator(Thing t) => t is Plant plant && pawn.CanReserve(plant) && !plant.IsBurning() &&
-                                            PlantUtility.PawnWillingToCutPlant_Job(t, pawn) && plant.IsTree();
+                                            PlantUtility.PawnWillingToCutPlant_Job(t, pawn) && plant.IsTree() &&
+                                            plant.CanYieldNow();
 
             //寻找身边最近的成熟的树
             var targetPlant = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map,
