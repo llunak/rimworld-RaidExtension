@@ -35,7 +35,7 @@ namespace SR.ModRimWorld.RaidExtension
             }
 
             //视野外看不见
-            if (enemyTarget.IsInvisible())
+            if(InvisibilityUtility.GetInvisibilityComp(pawn) != null)
             {
                 return null;
             }
@@ -52,7 +52,7 @@ namespace SR.ModRimWorld.RaidExtension
             //近战的情况
             if (attackVerb.verbProps.IsMeleeAttack)
             {
-                var jobMeleeAttack = MeleeAttackJob(enemyTarget);
+                var jobMeleeAttack = MeleeAttackJob(pawn, enemyTarget);
                 jobMeleeAttack.killIncappedTarget = true;
                 jobMeleeAttack.attackDoorIfTargetLost = true;
                 jobMeleeAttack.canBashDoors = true;
