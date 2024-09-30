@@ -6,6 +6,7 @@
 //      /  \\        @Modified   2021-06-17 19:42:56
 //    *(__\_\        @Copyright  Copyright (c) 2021, Shadowrabbit
 // ******************************************************************
+// Modified by llunak, l.lunak@centrum.cz .
 
 using System.Linq;
 using JetBrains.Annotations;

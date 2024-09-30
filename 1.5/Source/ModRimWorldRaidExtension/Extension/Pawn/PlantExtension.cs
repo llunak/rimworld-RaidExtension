@@ -6,6 +6,8 @@
 //      /  \\        @Modified   2021-07-23 13:16:49
 //    *(__\_\        @Copyright  Copyright (c) 2021, Shadowrabbit
 // ******************************************************************
+// Modified by llunak, l.lunak@centrum.cz .
+
 using RimWorld;
 
 namespace SR.ModRimWorld.RaidExtension

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+// Modified by llunak, l.lunak@centrum.cz .
+
+using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using Verse;
