@@ -62,11 +62,40 @@ namespace SR.ModRimWorld.RaidExtension
                 return false;
             }
 
-            if (!RCellFinder.TryFindTravelDestFrom(parms.spawnCenter, map, out var travelDest))
+            // Using mere RCellFinder.TryFindTravelDestFrom() simply tries to find a reachable tile on the opposite
+            // edge of the map, but it does not care about the colony, resulting in the hostile caravan sometimes
+            // walking very close to the base (especially if it's not walled off), which looks silly.
+            // First try to find a path that avoids the colony in a reasonable distance.
+            PathAvoidsColonistsChecker pathChecker = new PathAvoidsColonistsChecker( parms.spawnCenter, map );
+            IntVec3 travelDest = IntVec3.Invalid;
+            int minDistToColonists = 100;
+            Danger danger = Danger.None;
+            for( int attempt = 0; attempt < 50; ++attempt )
             {
-                Log.Warning(
-                    $"{MiscDef.LogTag}Failed to do hostile trader caravan Passing incident from {parms.spawnCenter} : Couldn't find anywhere for the traveler to go.");
-                return false;
+                if( attempt == 10 || attempt == 40 )
+                    minDistToColonists = 50;
+                else if( attempt == 25 )
+                {
+                    minDistToColonists = 100;
+                    danger = Danger.Some;
+                }
+                if (!RCellFinder.TryFindTravelDestFrom(parms.spawnCenter, map, out var travelDestTmp))
+                    continue;
+                if( pathChecker.CheckPathAvoidsColonists( travelDestTmp, minDistToColonists, danger ))
+                {
+                    travelDest = travelDestTmp;
+                    break;
+                }
+            }
+
+            if( travelDest == IntVec3.Invalid ) // No luck? Simply try to find a path.
+            {
+                if (!RCellFinder.TryFindTravelDestFrom(parms.spawnCenter, map, out travelDest))
+                {
+                    Log.Warning(
+                        $"{MiscDef.LogTag}Failed to do hostile trader caravan Passing incident from {parms.spawnCenter} : Couldn't find anywhere for the traveler to go.");
+                    return false;
+                }
             }
 
             var list = SpawnPawns(parms);
