@@ -37,12 +37,20 @@ namespace SR.ModRimWorld.RaidExtension
         public static Pawn FindTargetAnimal(this Map map, IntVec3 position, float minTargetRequireHealthScale)
         {
             //验证器
-            bool SpoilValidator(Thing t) => ThingValidator.IsAnimal(t, minTargetRequireHealthScale);
+            bool SpoilValidatorAny(Thing t) => ThingValidator.IsAnimal(t, minTargetRequireHealthScale);
+            bool SpoilValidatorNotColony(Thing t) => SpoilValidatorAny(t)
+                && t.Faction != Faction.OfPlayer && !map.areaManager.Home[ t.Position ];
 
-            //找队长身边最近的动物
+            // First try to find a non-colony animal outside the home area.
             var targetThing = GenClosest.ClosestThing_Global_Reachable(position, map,
                 map.mapPawns.AllPawnsSpawned, PathEndMode.ClosestTouch,
-                TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidator);
+                TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidatorNotColony);
+            if( targetThing != null )
+                return (Pawn) targetThing;
+            // If that fails, any animal.
+            targetThing = GenClosest.ClosestThing_Global_Reachable(position, map,
+                map.mapPawns.AllPawnsSpawned, PathEndMode.ClosestTouch,
+                TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidatorAny);
 
             return (Pawn) targetThing;
         }

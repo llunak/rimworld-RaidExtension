@@ -54,13 +54,21 @@ namespace SR.ModRimWorld.RaidExtension
         public static Thing FindTree(this Pawn pawn)
         {
             //验证器 是植物 可以保留 没有燃烧中 角色不是什么树木爱好者 成熟了
-            bool SpoilValidator(Thing t) => ThingValidator.IsTree(t) && pawn.CanReserve(t)
+            bool SpoilValidatorAny(Thing t) => ThingValidator.IsTree(t) && pawn.CanReserve(t)
                                             && PlantUtility.PawnWillingToCutPlant_Job(t, pawn);
+            bool SpoilValidatorNotColony(Thing t) => SpoilValidatorAny(t)
+                && t.Faction != Faction.OfPlayer && !t.Map.areaManager.Home[ t.Position ];
 
-            //寻找身边最近的成熟的树
+            // First try to find a plant outside of the colony.
             var targetPlant = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map,
                 pawn.Map.spawnedThings, PathEndMode.ClosestTouch,
-                TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidator);
+                TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidatorNotColony);
+            if( targetPlant != null )
+                return targetPlant;
+            // If that fails, any plant.
+            targetPlant = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map,
+                pawn.Map.spawnedThings, PathEndMode.ClosestTouch,
+                TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidatorAny);
             return targetPlant;
         }
 
