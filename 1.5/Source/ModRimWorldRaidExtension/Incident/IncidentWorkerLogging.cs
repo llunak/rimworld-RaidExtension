@@ -72,6 +72,11 @@ namespace SR.ModRimWorld.RaidExtension
             {
                 parms.points = MiscDef.MaxThreatPoints;
             }
+            // If the loggers will need to attack the colony, reduce raid size (same logic as with poaching).
+            // It is not known how many pawns will be in this raid at this point (since that depends
+            // on raid points), so let's say at least 50 trees is enough.
+            if (parms.target is Map map && !map.IsEnoughNonColonyTrees( 50 ))
+                parms.points *= 0.8f;
         }
 
         /// <summary>

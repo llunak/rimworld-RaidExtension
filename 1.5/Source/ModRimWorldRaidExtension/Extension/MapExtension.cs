@@ -64,5 +64,23 @@ namespace SR.ModRimWorld.RaidExtension
         {
             return map.spawnedThings != null && map.spawnedThings.Any(ThingValidator.IsTree);
         }
+
+        public static bool IsEnoughNonColonyTrees(this Map map, int limit)
+        {
+            if( map.spawnedThings == null )
+                return false;
+            int count = 0;
+            foreach(Thing t in map.spawnedThings)
+            {
+                if( !ThingValidator.IsTree( t ))
+                    continue;
+                if( t.Faction == Faction.OfPlayer || t.Map.areaManager.Home[ t.Position ] )
+                    continue;
+                ++count;
+                if( count >= limit )
+                    return true;
+            }
+            return false;
+        }
     }
 }
