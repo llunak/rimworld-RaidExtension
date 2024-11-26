@@ -56,7 +56,6 @@ namespace SR.ModRimWorld.RaidExtension
                 var jobMeleeAttack = MeleeAttackJob(pawn, enemyTarget);
                 jobMeleeAttack.killIncappedTarget = true;
                 jobMeleeAttack.attackDoorIfTargetLost = true;
-                jobMeleeAttack.canBashDoors = true;
                 jobMeleeAttack.expiryInterval = 100;
                 jobMeleeAttack.checkOverrideOnExpire = true;
                 return jobMeleeAttack;
@@ -103,7 +102,6 @@ namespace SR.ModRimWorld.RaidExtension
             job.expiryInterval = 100;
             job.checkOverrideOnExpire = true;
             job.attackDoorIfTargetLost = true;
-            job.canBashDoors = true;
             job.collideWithPawns = true;
             return job;
         }
@@ -153,7 +151,6 @@ namespace SR.ModRimWorld.RaidExtension
             rangeAttackJob.endIfCantShootTargetFromCurPos = true;
             rangeAttackJob.killIncappedTarget = true;
             rangeAttackJob.attackDoorIfTargetLost = true;
-            rangeAttackJob.canBashDoors = true;
             rangeAttackJob.expiryInterval = 100;
             rangeAttackJob.checkOverrideOnExpire = true;
             return rangeAttackJob;
