@@ -11,6 +11,7 @@
 using System.Linq;
 using RimWorld;
 using Verse;
+using Verse.AI;
 
 namespace SR.ModRimWorld.RaidExtension
 {
@@ -26,6 +27,24 @@ namespace SR.ModRimWorld.RaidExtension
         {
             return map.mapPawns != null && Enumerable.Any(map.mapPawns.AllPawnsSpawned,
                 (Thing t) => ThingValidator.IsAnimal(t, minTargetRequireHealthScale));
+        }
+
+        /// <summary>
+        /// 寻找最近的 满足体型的动物
+        /// </summary>
+        /// <param name="minTargetRequireHealthScale"></param>
+        /// <returns></returns>
+        public static Pawn FindTargetAnimal(this Map map, IntVec3 position, float minTargetRequireHealthScale)
+        {
+            //验证器
+            bool SpoilValidator(Thing t) => ThingValidator.IsAnimal(t, minTargetRequireHealthScale);
+
+            //找队长身边最近的动物
+            var targetThing = GenClosest.ClosestThing_Global_Reachable(position, map,
+                map.mapPawns.AllPawnsSpawned, PathEndMode.ClosestTouch,
+                TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidator);
+
+            return (Pawn) targetThing;
         }
 
         /// <summary>

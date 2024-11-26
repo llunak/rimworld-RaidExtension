@@ -40,15 +40,10 @@ namespace SR.ModRimWorld.RaidExtension
         /// <returns></returns>
         public static Pawn FindTargetAnimal(this Pawn leader, float minTargetRequireHealthScale)
         {
-            //验证器
-            bool SpoilValidator(Thing t) => ThingValidator.IsAnimal(t, minTargetRequireHealthScale);
-
-            //找队长身边最近的动物
-            var targetThing = GenClosest.ClosestThing_Global_Reachable(leader.Position, leader.Map,
-                leader.Map.mapPawns.AllPawnsSpawned, PathEndMode.ClosestTouch,
-                TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidator);
-
-            return (Pawn) targetThing;
+            Map map = leader.Map;
+            if( map == null )
+                return null;
+            return map.FindTargetAnimal(leader.Position, minTargetRequireHealthScale);
         }
 
         /// <summary>

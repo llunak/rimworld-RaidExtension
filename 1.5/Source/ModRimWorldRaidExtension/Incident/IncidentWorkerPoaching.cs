@@ -101,6 +101,12 @@ namespace SR.ModRimWorld.RaidExtension
             ResolveRaidStrategy(parms, combat);
             //处理入场方式
             ResolveRaidArriveMode(parms);
+            //设置集群AI
+            if (!(parms.raidStrategy.Worker is RaidStrategyWorkerPoaching raidStrategyWorkerPoaching))
+            {
+                Log.Error($"{MiscDef.LogTag}strategy must be RaidStrategyWorkerPoaching");
+                return false;
+            }
             //尝试生成威胁（参数）
             parms.raidStrategy.Worker.TryGenerateThreats(parms);
             //尝试解决袭击召唤中心
@@ -109,6 +115,16 @@ namespace SR.ModRimWorld.RaidExtension
                 Log.Warning($"{MiscDef.LogTag}cant resolve raid spawn center: {parms}");
                 return false;
             }
+
+            //设置狩猎目标
+            var animal = map.FindTargetAnimal(parms.spawnCenter, MiscDef.MinTargetRequireHealthScale);
+            if (animal == null)
+            {
+                Log.Warning($"{MiscDef.LogTag}can't find any animal.");
+                return false;
+            }
+            raidStrategyWorkerPoaching.TempAnimal = animal;
+            AdjustHomeRaidPoints(parms, animal);
 
             //生成派系部队
             var pawnList = parms.raidStrategy.Worker.SpawnThreats(parms);
@@ -120,22 +136,7 @@ namespace SR.ModRimWorld.RaidExtension
 
             //解决信件
             ResolveLetter(parms, pawnList);
-            //设置集群AI
-            if (!(parms.raidStrategy.Worker is RaidStrategyWorkerPoaching raidStrategyWorkerPoaching))
-            {
-                Log.Error($"{MiscDef.LogTag}strategy must be RaidStrategyWorkerPoaching");
-                return false;
-            }
 
-            //设置狩猎目标
-            var animal = pawnList[0].FindTargetAnimal(MiscDef.MinTargetRequireHealthScale);
-            if (animal == null)
-            {
-                Log.Warning($"{MiscDef.LogTag}can't find any animal.");
-                return false;
-            }
-
-            raidStrategyWorkerPoaching.TempAnimal = animal;
             raidStrategyWorkerPoaching.MakeLords(parms, pawnList);
             //袭击时设置一倍速
             Find.TickManager.slower.SignalForceNormalSpeedShort();
@@ -169,6 +170,19 @@ namespace SR.ModRimWorld.RaidExtension
             {
                 parms.points = MiscDef.MinThreatPoints;
             }
+        }
+
+        // If the target is either a colony's animal or it is within the colony,
+        // reduce the raid size somewhat (as in that case it is essentially a direct raid
+        // with no delay and all raiders grouped up, which is harder to defend against).
+        private void AdjustHomeRaidPoints(IncidentParms parms, Pawn animal)
+        {
+            float factor = 1f;
+            if( animal.Faction != null && animal.Faction == Faction.OfPlayer )
+                factor = 0.8f;
+            if( animal.Position.InBounds( animal.Map ) && animal.Map.areaManager.Home[ animal.Position ] )
+                factor = 0.8f;
+            parms.points = Math.Max( parms.points * factor, MiscDef.MinThreatPoints );
         }
 
         /// <summary>
