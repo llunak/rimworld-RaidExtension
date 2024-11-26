@@ -28,9 +28,8 @@ namespace SR.ModRimWorld.RaidExtension
         public static bool IsTargetAnimalValid(this Pawn searcher, Thing target, float minTargetRequireHealthScale)
         {
             //目标是动物 没死 符合健康缩放 可保留 不是搜寻者派系的 
-            return target is Pawn animal && animal.RaceProps != null && animal.RaceProps.Animal && !animal.Dead &&
-                   animal.RaceProps.baseHealthScale >= minTargetRequireHealthScale && searcher.CanReserve(target) &&
-                   searcher.Faction != null && (animal.Faction == null || searcher.Faction != animal.Faction);
+            return ThingValidator.IsAnimal(target, minTargetRequireHealthScale) && searcher.CanReserve(target) &&
+                   searcher.Faction != null && (target.Faction == null || searcher.Faction != target.Faction);
         }
 
         /// <summary>
@@ -42,7 +41,7 @@ namespace SR.ModRimWorld.RaidExtension
         public static Pawn FindTargetAnimal(this Pawn leader, float minTargetRequireHealthScale)
         {
             //验证器
-            bool SpoilValidator(Thing t) => leader.IsTargetAnimalValid(t, minTargetRequireHealthScale);
+            bool SpoilValidator(Thing t) => ThingValidator.IsAnimal(t, minTargetRequireHealthScale);
 
             //找队长身边最近的动物
             var targetThing = GenClosest.ClosestThing_Global_Reachable(leader.Position, leader.Map,
@@ -60,9 +59,8 @@ namespace SR.ModRimWorld.RaidExtension
         public static Thing FindTree(this Pawn pawn)
         {
             //验证器 是植物 可以保留 没有燃烧中 角色不是什么树木爱好者 成熟了
-            bool SpoilValidator(Thing t) => t is Plant plant && pawn.CanReserve(plant) && !plant.IsBurning() &&
-                                            PlantUtility.PawnWillingToCutPlant_Job(t, pawn) && plant.IsTree() &&
-                                            plant.CanYieldNow();
+            bool SpoilValidator(Thing t) => ThingValidator.IsTree(t) && pawn.CanReserve(t)
+                                            && PlantUtility.PawnWillingToCutPlant_Job(t, pawn);
 
             //寻找身边最近的成熟的树
             var targetPlant = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map,

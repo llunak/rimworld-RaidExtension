@@ -24,11 +24,8 @@ namespace SR.ModRimWorld.RaidExtension
         /// <returns></returns>
         public static bool IsAnimalTargetExist(this Map map, float minTargetRequireHealthScale)
         {
-            bool SpoilValidator(Thing t) => t is Pawn animal && animal.RaceProps != null && animal.RaceProps.Animal &&
-                                            !animal.Dead && animal.RaceProps.baseHealthScale >=
-                                            minTargetRequireHealthScale;
-
-            return map.mapPawns != null && Enumerable.Any(map.mapPawns.AllPawnsSpawned, SpoilValidator);
+            return map.mapPawns != null && Enumerable.Any(map.mapPawns.AllPawnsSpawned,
+                (Thing t) => ThingValidator.IsAnimal(t, minTargetRequireHealthScale));
         }
 
         /// <summary>
@@ -38,8 +35,7 @@ namespace SR.ModRimWorld.RaidExtension
         /// <returns></returns>
         public static bool IsTreeExist(this Map map)
         {
-            bool SpoilValidator(Thing t) => t is Plant plant && !plant.IsBurning() && plant.IsTree() && plant.CanYieldNow();
-            return map.spawnedThings != null && map.spawnedThings.Any(SpoilValidator);
+            return map.spawnedThings != null && map.spawnedThings.Any(ThingValidator.IsTree);
         }
     }
 }
