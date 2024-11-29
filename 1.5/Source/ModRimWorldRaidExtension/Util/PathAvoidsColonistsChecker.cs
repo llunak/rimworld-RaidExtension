@@ -1,5 +1,6 @@
 // Modified by llunak, l.lunak@centrum.cz .
 
+using RimWorld;
 using Verse;
 using Verse.AI;
 using System.Collections.Generic;
@@ -18,7 +19,29 @@ namespace SR.ModRimWorld.RaidExtension.Util
         private IntVec3 pos;
         private readonly bool flag = false; // Debug.
 
-        public PathAvoidsColonistsChecker(IntVec3 _pos, Map _map)
+        public static IntVec3 FindPathDestination( Map map, IntVec3 start )
+        {
+            PathAvoidsColonistsChecker pathChecker = new PathAvoidsColonistsChecker( map, start );
+            int minDistToColonists = 100;
+            Danger danger = Danger.None;
+            for( int attempt = 0; attempt < 50; ++attempt )
+            {
+                if( attempt == 10 || attempt == 40 )
+                    minDistToColonists = 50;
+                else if( attempt == 25 )
+                {
+                    minDistToColonists = 100;
+                    danger = Danger.Some;
+                }
+                if (!RCellFinder.TryFindTravelDestFrom( start, map, out var travelDest ))
+                    continue;
+                if( pathChecker.CheckPathAvoidsColonists( travelDest, minDistToColonists, danger ))
+                    return travelDest;
+            }
+            return IntVec3.Invalid;
+        }
+
+        public PathAvoidsColonistsChecker(Map _map, IntVec3 _pos)
         {
             map = _map;
             pos = _pos;
