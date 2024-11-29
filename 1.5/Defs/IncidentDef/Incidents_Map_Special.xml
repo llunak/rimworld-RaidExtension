@@ -38,7 +38,7 @@
     </IncidentDef>
     <IncidentDef>
         <defName>SrHositleCaravanPassing</defName>
-        <label>Hositle Caravan Passing By</label>
+        <label>Hostile Caravan Passing By</label>
         <targetTags>
             <li>Map_PlayerHome</li>
         </targetTags>
