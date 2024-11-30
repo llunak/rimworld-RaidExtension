@@ -21,6 +21,7 @@ namespace SR.ModRimWorld.RaidExtension
         private const int WaitTime = 500; //集合等待时间
         private int numTreesCut = 0;
         private Dictionary< Pawn, Pawn > pawnsToFollowCache = new Dictionary< Pawn, Pawn >();
+        private Dictionary< Pawn, ( Thing, int ) > treeForPawnCache = new Dictionary< Pawn, ( Thing, int ) >(); // int = tick
 
         public LordJobLogging()
         {
@@ -83,6 +84,18 @@ namespace SR.ModRimWorld.RaidExtension
         public void SetPawnToFollow( Pawn pawn, Pawn pawnToFollow )
         {
             pawnsToFollowCache[ pawn ] = pawnToFollow;
+        }
+
+        public ( Thing, int ) GetTreeForPawn( Pawn pawn )
+        {
+            if( treeForPawnCache.TryGetValue( pawn, out var value ))
+                return value;
+            return ( null, 0 );
+        }
+
+        public void SetTreeForPawn( Pawn pawn, Thing tree, int tick )
+        {
+            treeForPawnCache[ pawn ] = ( tree, tick );
         }
     }
 }

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using RimWorld;
 using Verse;
 using Verse.AI;
+using Verse.AI.Group;
 
 namespace SR.ModRimWorld.RaidExtension
 {
@@ -59,16 +60,42 @@ namespace SR.ModRimWorld.RaidExtension
             bool SpoilValidatorNotColony(Thing t) => SpoilValidatorAny(t)
                 && t.Faction != Faction.OfPlayer && !t.Map.areaManager.Home[ t.Position ];
 
+            // Try to cache the found tree (or nothing found), as this is a relatively expensive operation and
+            // done repeatedly.
+            Lord lord = pawn.GetLord();
+            LordJobLogging lordJob = lord?.LordJob as LordJobLogging;
+            int cacheTickTimeout = 60 * 60; // 60 seconds
+            if( lordJob != null )
+            {
+                ( Thing tree, int tick ) = lordJob.GetTreeForPawn( pawn );
+                if( Find.TickManager.TicksGame < tick + cacheTickTimeout )
+                {
+                    if( tree == null )
+                        return null;
+                    if( SpoilValidatorAny( tree )
+                        && pawn.Map.reachability.CanReach(pawn.Position, tree.SpawnedParentOrMe, PathEndMode.ClosestTouch,
+                            TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some)))
+                    {
+                        return tree;
+                    }
+                }
+            }
+
             // First try to find a plant outside of the colony.
             var targetPlant = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map,
                 pawn.Map.spawnedThings, PathEndMode.ClosestTouch,
                 TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidatorNotColony);
-            if( targetPlant != null )
-                return targetPlant;
-            // If that fails, any plant.
-            targetPlant = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map,
-                pawn.Map.spawnedThings, PathEndMode.ClosestTouch,
-                TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidatorAny);
+            if( targetPlant == null )
+            {
+                // If that fails, any plant.
+                targetPlant = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map,
+                    pawn.Map.spawnedThings, PathEndMode.ClosestTouch,
+                    TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Some), validator: SpoilValidatorAny);
+            }
+            // Cache negative hits too, for when there are not enough trees. Ticks are primarily used to time out negative
+            // hits, for cases like a tree was reserved by another pawn that got killed.
+            if( lordJob != null )
+                lordJob.SetTreeForPawn( pawn, targetPlant, Find.TickManager.TicksGame );
             return targetPlant;
         }
 
