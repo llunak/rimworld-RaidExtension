@@ -11,6 +11,7 @@
 using RimWorld;
 using Verse;
 using Verse.AI.Group;
+using System.Collections.Generic;
 
 namespace SR.ModRimWorld.RaidExtension
 {
@@ -19,6 +20,7 @@ namespace SR.ModRimWorld.RaidExtension
         private const int ExitTime = 2500 * 4; //离开时间
         private const int WaitTime = 500; //集合等待时间
         private int numTreesCut = 0;
+        private Dictionary< Pawn, Pawn > pawnsToFollowCache = new Dictionary< Pawn, Pawn >();
 
         public LordJobLogging()
         {
@@ -69,6 +71,18 @@ namespace SR.ModRimWorld.RaidExtension
         public bool IsEnoughTreesCut()
         {
             return lord.ownedPawns.Count > 0 && numTreesCut > lord.ownedPawns.Count / 2;
+        }
+
+        public Pawn GetPawnToFollow( Pawn pawn )
+        {
+            if( pawnsToFollowCache.TryGetValue( pawn, out Pawn pawnToFollow ))
+                return pawnToFollow;
+            return null;
+        }
+
+        public void SetPawnToFollow( Pawn pawn, Pawn pawnToFollow )
+        {
+            pawnsToFollowCache[ pawn ] = pawnToFollow;
         }
     }
 }

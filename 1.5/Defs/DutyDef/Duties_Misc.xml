@@ -15,6 +15,9 @@
                     </subNodes>
                 </li>
                 <li Class="SR.ModRimWorld.RaidExtension.JobGiverLogging"/>
+                <li Class="SR.ModRimWorld.RaidExtension.JobGiverFollowLogger"/>
+                <!-- This should be wandering close to the followed logger, but this is good enough. -->
+                <li Class="JobGiver_WanderAnywhere" />
             </subNodes>
         </thinkNode>
     </DutyDef>
