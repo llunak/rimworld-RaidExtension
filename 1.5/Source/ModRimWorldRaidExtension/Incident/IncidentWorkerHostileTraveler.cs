@@ -73,6 +73,11 @@ namespace SR.ModRimWorld.RaidExtension
 
         private void SendLetter(IncidentParms parms, List<Pawn> pawns)
         {
+            if( HideRaidStrategy.Enabled )
+            {
+                HideRaidStrategy.SendLetter(this, parms, pawns);
+                return;
+            }
             var letterLabel = "SrHostileTravellersPassing"
                 .Translate((NamedArgument) parms.faction.Name).CapitalizeFirst();
             TaggedString letterText;

@@ -11,6 +11,7 @@
 using System.Linq;
 using JetBrains.Annotations;
 using RimWorld;
+using System.Collections.Generic;
 using SR.ModRimWorld.RaidExtension.Util;
 using Verse;
 
@@ -19,6 +20,11 @@ namespace SR.ModRimWorld.RaidExtension
     [UsedImplicitly]
     public class IncidentWorkerLogging : IncidentWorker_RaidEnemy
     {
+        static IncidentWorkerLogging()
+        {
+            HideRaidStrategy.RegisterRaidLikeEvent( typeof(IncidentWorkerLogging));
+        }
+
         /// <summary>
         /// 是否可以生成事件
         /// </summary>
@@ -95,6 +101,8 @@ namespace SR.ModRimWorld.RaidExtension
         /// <returns></returns>
         protected override LetterDef GetLetterDef()
         {
+            if( HideRaidStrategy.Enabled )
+                return base.GetLetterDef();
             return LetterDefOf.ThreatSmall;
         }
     }

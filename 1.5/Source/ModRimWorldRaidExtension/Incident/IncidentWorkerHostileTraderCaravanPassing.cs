@@ -103,6 +103,11 @@ namespace SR.ModRimWorld.RaidExtension
         /// <param name="traderKind"></param>
         protected override void SendLetter(IncidentParms parms, List<Pawn> pawns, TraderKindDef traderKind)
         {
+            if( HideRaidStrategy.Enabled )
+            {
+                HideRaidStrategy.SendLetter(this, parms, pawns);
+                return;
+            }
             var letterLabel = "SrHostileTraderCaravanPassing"
                 .Translate((NamedArgument) parms.faction.Name, (NamedArgument) traderKind.label).CapitalizeFirst();
             var letterText = "LetterTraderCaravanArrival"

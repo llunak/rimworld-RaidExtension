@@ -21,6 +21,11 @@ namespace SR.ModRimWorld.RaidExtension
     [UsedImplicitly]
     public class IncidentWorkerPoaching : IncidentWorker_RaidEnemy
     {
+        static IncidentWorkerPoaching()
+        {
+            HideRaidStrategy.RegisterRaidLikeEvent( typeof(IncidentWorkerPoaching));
+        }
+
         /// <summary>
         /// 是否可以生成事件
         /// </summary>
@@ -191,6 +196,8 @@ namespace SR.ModRimWorld.RaidExtension
         /// <returns></returns>
         protected override LetterDef GetLetterDef()
         {
+            if( HideRaidStrategy.Enabled )
+                return base.GetLetterDef();
             return LetterDefOf.ThreatSmall;
         }
 
