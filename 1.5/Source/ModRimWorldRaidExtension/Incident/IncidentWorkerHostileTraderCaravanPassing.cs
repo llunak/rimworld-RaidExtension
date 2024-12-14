@@ -109,7 +109,7 @@ namespace SR.ModRimWorld.RaidExtension
                 .Translate(parms.faction.NameColored, (NamedArgument) traderKind.label).CapitalizeFirst();
             PawnRelationUtility.Notify_PawnsSeenByPlayer_Letter(pawns, ref letterLabel, ref letterText,
                 "LetterRelatedPawnsNeutralGroup".Translate((NamedArgument) Faction.OfPlayer.def.pawnsPlural), true);
-            SendStandardLetter(letterLabel, letterText, LetterDefOf.ThreatSmall, parms, pawns[0]);
+            SendStandardLetter(letterLabel, letterText, LetterDefOf.ThreatSmall, parms, pawns);
         }
 
         /// <summary>
