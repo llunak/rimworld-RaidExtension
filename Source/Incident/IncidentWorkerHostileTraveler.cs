@@ -29,8 +29,9 @@ namespace SR.ModRimWorld.RaidExtension
         /// <param name="map"></param>
         /// <param name="desperate"></param>
         /// <returns></returns>
-        protected override bool FactionCanBeGroupSource(Faction f, Map map, bool desperate = false)
+        public override bool FactionCanBeGroupSource(Faction f, IncidentParms parms, bool desperate = false)
         {
+            Map map = (Map)parms.target;
             return !f.IsPlayer && !f.defeated && !f.temporary &&
                    (desperate || f.def.allowedArrivalTemperatureRange.Includes(map.mapTemperature.OutdoorTemp) &&
                        f.def.allowedArrivalTemperatureRange.Includes(map.mapTemperature.SeasonalTemp)) && !f.Hidden &&

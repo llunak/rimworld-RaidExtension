@@ -54,7 +54,7 @@ namespace SR.ModRimWorld.RaidExtension
             }
 
             //候选派系列表
-            var candidateFactionList = CandidateFactions(map).ToList();
+            var candidateFactionList = CandidateFactions(parms).ToList();
             return Enumerable.Any(candidateFactionList, faction => faction.HostileTo(Faction.OfPlayer));
         }
 
@@ -65,9 +65,9 @@ namespace SR.ModRimWorld.RaidExtension
         /// <param name="map"></param>
         /// <param name="desperate"></param>
         /// <returns></returns>
-        protected override bool FactionCanBeGroupSource(Faction f, Map map, bool desperate = false)
+        public override bool FactionCanBeGroupSource(Faction f, IncidentParms parms, bool desperate = false)
         {
-            return base.FactionCanBeGroupSource(f, map, desperate) && f.def.humanlikeFaction && !f.Hidden;
+            return base.FactionCanBeGroupSource(f, parms, desperate) && f.def.humanlikeFaction && !f.Hidden;
         }
 
         /// <summary>
