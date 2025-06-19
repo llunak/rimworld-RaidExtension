@@ -30,16 +30,11 @@ namespace SR.ModRimWorld.RaidExtension
             return base.CanUseWith(parms, groupKind) && parms.faction != null && parms.faction != Faction.OfMechanoids;
         }
 
-        /// <summary>
-        /// 策略是否适用于角色
-        /// </summary>
-        /// <param name="pointsTotal"></param>
-        /// <param name="p"></param>
-        /// <param name="otherPawns"></param>
-        /// <returns></returns>
-        public override bool CanUsePawn(float pointsTotal, Pawn p, List<Pawn> otherPawns)
+        public override bool CanUsePawnGenOption(float pointsTotal, PawnGenOption g, List<PawnGenOptionWithXenotype> chosenGroups, Faction faction = null)
         {
-            return base.CanUsePawn(pointsTotal, p, otherPawns) && p.RaceProps.Humanlike;
+            if( !g.kind.RaceProps.Humanlike )
+                return false;
+            return base.CanUsePawnGenOption( pointsTotal, g, chosenGroups, faction );
         }
 
         /// <summary>
