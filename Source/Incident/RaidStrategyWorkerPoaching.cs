@@ -37,7 +37,50 @@ namespace SR.ModRimWorld.RaidExtension
         {
             if( !g.kind.RaceProps.Humanlike )
                 return false;
+            // Unfortunately CanUsePawn() cannot filter out pawns with poor weapons on its own,
+            // because it's called repeatedly until it either succeeds or until it's ignored.
+            // So if the pawn kind allows only poor weapons, one will be selected in the end anyway.
+            // Try to filter out such pawn kinds, even if guessing just based on weapon tags doesn't work very well.
+            bool possiblyHasSuitable = false;
+            foreach( string weaponTag in g.kind.weaponTags )
+            {
+                if( !weaponTag.Contains( "Grenade" ) && !weaponTag.Contains( "Melee" )
+                    && !weaponTag.Contains( "GunSingleUse" ) && !weaponTag.Contains( "Flame" )
+                    && !weaponTag.Contains( "Tox" ))
+                {
+                    possiblyHasSuitable = true;
+                    break;
+                }
+            }
+            if( !possiblyHasSuitable )
+                return false;
             return base.CanUsePawnGenOption( pointsTotal, g, chosenGroups, faction );
+        }
+
+        public override bool CanUsePawn(float pointsTotal, Pawn p, List<Pawn> otherPawns)
+        {
+            if( !base.CanUsePawn(pointsTotal, p, otherPawns))
+                return false;
+            // Avoid poorly suitable weapons (melee, non-lethal, too dangerous).
+            ThingDef weaponDef = p.equipment.Primary?.def;
+            if( weaponDef == null )
+                return false;
+            if( !weaponDef.IsRangedWeapon )
+                return false;
+            if( weaponDef.weaponTags.Contains("GunSingleUse")) // Dangerous guns such as rocket launchers.
+                return false;
+            DamageDef damage = p.equipment.PrimaryEq.PrimaryVerb.GetDamageDef();
+            if( damage == DamageDefOf.ToxGas
+                || damage == DamageDefOf.Smoke
+                || damage == DamageDefOf.NerveStun
+                || damage == DamageDefOf.EMP
+                || damage == DamageDefOf.Stun
+                || damage == DamageDefOf.Flame
+                || damage == DamageDefOf.Bomb)
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
