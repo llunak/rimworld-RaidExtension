@@ -109,7 +109,8 @@ namespace SR.ModRimWorld.RaidExtension
             //设置集群AI
             if (!(parms.raidStrategy.Worker is RaidStrategyWorkerPoaching raidStrategyWorkerPoaching))
             {
-                Log.Error($"{MiscDef.LogTag}strategy must be RaidStrategyWorkerPoaching");
+                Log.Error($"{MiscDef.LogTag}strategy must be RaidStrategyWorkerPoaching, but is '"
+                    + parms.raidStrategy.Worker + "'");
                 return false;
             }
             //尝试生成威胁（参数）
