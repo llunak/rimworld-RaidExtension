@@ -37,6 +37,23 @@ namespace SR.ModRimWorld.RaidExtension
             return base.CanUsePawnGenOption( pointsTotal, g, chosenGroups, faction );
         }
 
+        public override bool CanUsePawn(float pointsTotal, Pawn p, List<Pawn> otherPawns)
+        {
+            if( !CanCutTreesReasonablyFast( p )) // Avoids pawns that possibly take very long to cut a tree.
+                return false;
+            return base.CanUsePawn( pointsTotal, p, otherPawns );
+        }
+
+        // Pretty much SappersUtility.CanMineReasonablyFast().
+        private bool CanCutTreesReasonablyFast(Pawn p)
+        {
+            if (p.RaceProps.Humanlike && !p.skills.GetSkill(SkillDefOf.Plants).TotallyDisabled && !StatDefOf.PlantWorkSpeed.Worker.IsDisabledFor(p))
+            {
+                return p.skills.GetSkill(SkillDefOf.Plants).Level >= 4;
+            }
+            return false;
+        }
+
         /// <summary>
         /// 创建集群AI工作
         /// </summary>
