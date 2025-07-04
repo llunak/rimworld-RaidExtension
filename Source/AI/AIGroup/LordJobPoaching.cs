@@ -10,6 +10,7 @@
 
 using RimWorld;
 using Verse;
+using Verse.AI;
 using Verse.AI.Group;
 
 namespace SR.ModRimWorld.RaidExtension
@@ -72,6 +73,19 @@ namespace SR.ModRimWorld.RaidExtension
                 "SrTakePreyExit".Translate(faction.def.pawnsPlural.CapitalizeFirst(),
                     faction.Name), MessageTypeDefOf.ThreatSmall));
             stateGraph.AddTransition(transitionPoachingToTakePreyExit);
+            // Handle becoming non-hostile (from LordJob_Siege).
+            LordToil_ExitMap lordToil_ExitMap = new LordToil_ExitMap(LocomotionUrgency.Jog, canDig: false, interruptCurrentJob: true)
+            {
+                useAvoidGrid = true
+            };
+            stateGraph.AddToil(lordToil_ExitMap);
+            Transition transitionNonHostile = new Transition(lordToilStage, lordToil_ExitMap);
+            transitionNonHostile.AddSource(lordToilPoaching);
+            transitionNonHostile.AddSource(lordToilTakePreyExit);
+            transitionNonHostile.AddTrigger(new Trigger_BecameNonHostileToPlayer());
+            transitionNonHostile.AddPreAction(new TransitionAction_Message(
+                "MessageRaidersLeaving".Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
+            stateGraph.AddTransition(transitionNonHostile);
             return stateGraph;
         }
     }

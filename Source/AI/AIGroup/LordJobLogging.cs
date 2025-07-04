@@ -10,6 +10,7 @@
 
 using RimWorld;
 using Verse;
+using Verse.AI;
 using Verse.AI.Group;
 using System.Collections.Generic;
 
@@ -61,6 +62,19 @@ namespace SR.ModRimWorld.RaidExtension
                 "SrTakeWoodExit".Translate(faction.def.pawnsPlural.CapitalizeFirst(),
                     faction.Name), MessageTypeDefOf.ThreatSmall));
             stateGraph.AddTransition(transitionLoggingToTakeWoodExit);
+            // Handle becoming non-hostile (from LordJob_Siege).
+            LordToil_ExitMap lordToil_ExitMap = new LordToil_ExitMap(LocomotionUrgency.Jog, canDig: false, interruptCurrentJob: true)
+            {
+                useAvoidGrid = true
+            };
+            stateGraph.AddToil(lordToil_ExitMap);
+            Transition transitionNonHostile = new Transition(lordToilStage, lordToil_ExitMap);
+            transitionNonHostile.AddSource(lordToilLogging);
+            transitionNonHostile.AddSource(lordToilTakeWoodExit);
+            transitionNonHostile.AddTrigger(new Trigger_BecameNonHostileToPlayer());
+            transitionNonHostile.AddPreAction(new TransitionAction_Message(
+                "MessageRaidersLeaving".Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
+            stateGraph.AddTransition(transitionNonHostile);
             return stateGraph;
         }
 
