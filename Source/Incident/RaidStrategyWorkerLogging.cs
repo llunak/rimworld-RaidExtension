@@ -8,6 +8,7 @@
 // ******************************************************************
 // Modified by llunak, l.lunak@centrum.cz .
 
+using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using RimWorld;
@@ -19,6 +20,8 @@ namespace SR.ModRimWorld.RaidExtension
     [UsedImplicitly]
     public class RaidStrategyWorkerLogging : RaidStrategyWorker
     {
+        private bool isSurprise = false;
+
         /// <summary>
         /// 该策略适用于
         /// </summary>
@@ -54,6 +57,28 @@ namespace SR.ModRimWorld.RaidExtension
             return false;
         }
 
+        public override List<Pawn> SpawnThreats(IncidentParms parms)
+        {
+            ResolveLateInfo(parms);
+            return base.SpawnThreats(parms);
+        }
+
+        private void ResolveLateInfo(IncidentParms parms)
+        {
+            isSurprise = Rand.Chance(0.1f);
+            if( isSurprise )
+                parms.points *= 0.8f;
+            else
+            {
+                // If the loggers will need to attack the colony, reduce raid size (same logic as with poaching).
+                // It is not known how many pawns will be in this raid at this point (since that depends
+                // on raid points), so let's say at least 50 trees is enough.
+                if (parms.target is Map map && !map.IsEnoughNonColonyTrees( 50 ))
+                    parms.points *= 0.8f;
+            }
+            parms.points = Math.Clamp( parms.points, MiscDef.MinThreatPoints, MiscDef.MaxThreatPoints );
+        }
+
         /// <summary>
         /// 创建集群AI工作
         /// </summary>
@@ -67,7 +92,7 @@ namespace SR.ModRimWorld.RaidExtension
             var siegePositionFrom =
                 RCellFinder.FindSiegePositionFrom(parms.spawnCenter.IsValid ? parms.spawnCenter : pawns[0].PositionHeld,
                     map);
-            return new LordJobLogging(siegePositionFrom);
+            return new LordJobLogging(siegePositionFrom, isSurprise);
         }
     }
 }

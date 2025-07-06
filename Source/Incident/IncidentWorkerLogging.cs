@@ -68,22 +68,7 @@ namespace SR.ModRimWorld.RaidExtension
             return base.FactionCanBeGroupSource(f, parms, desperate) && f.def.humanlikeFaction && !f.Hidden;
         }
 
-        /// <summary>
-        /// 袭击点数
-        /// </summary>
-        /// <param name="parms"></param>
-        protected override void ResolveRaidPoints(IncidentParms parms)
-        {
-            if (parms.points > MiscDef.MaxThreatPoints)
-            {
-                parms.points = MiscDef.MaxThreatPoints;
-            }
-            // If the loggers will need to attack the colony, reduce raid size (same logic as with poaching).
-            // It is not known how many pawns will be in this raid at this point (since that depends
-            // on raid points), so let's say at least 50 trees is enough.
-            if (parms.target is Map map && !map.IsEnoughNonColonyTrees( 50 ))
-                parms.points *= 0.8f;
-        }
+        // The functionality of ResolveRaidPoints() is done in RaidStrategyWorkerLogging.
 
         /// <summary>
         /// 解决突袭策略

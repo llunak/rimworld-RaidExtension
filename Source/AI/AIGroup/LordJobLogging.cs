@@ -29,8 +29,9 @@ namespace SR.ModRimWorld.RaidExtension
         {
         }
 
-        public LordJobLogging(IntVec3 siegeSpot) : base(siegeSpot)
+        public LordJobLogging(IntVec3 siegeSpot, bool isSurprise) : base(siegeSpot)
         {
+            surpriseTimer.SetIsSurprise( isSurprise );
         }
 
         public override void ExposeData()
@@ -42,7 +43,7 @@ namespace SR.ModRimWorld.RaidExtension
 
         public override StateGraph CreateGraph()
         {
-            surpriseTimer.InitSurprise( ExitTime );
+            surpriseTimer.InitTimer( ExitTime );
             //集群AI流程状态机
             var stateGraph = new StateGraph();
             //添加流程 集结
@@ -65,7 +66,7 @@ namespace SR.ModRimWorld.RaidExtension
             var transitionLoggingToTakeWoodExit = new Transition(lordToilLogging, lordToilTakeWoodExit);
             var triggerTicksPassed = new Trigger_TicksPassed(ExitTime);
             var triggerTreesCut = new Trigger_TickCondition( () => IsEnoughTreesCut(), 250 );
-            if( !surpriseTimer.IsSurpriseActive )
+            if( !surpriseTimer.IsSurprise )
             {
                 transitionLoggingToTakeWoodExit.AddTrigger(triggerTicksPassed);
                 transitionLoggingToTakeWoodExit.AddTrigger(triggerTreesCut);
@@ -75,7 +76,7 @@ namespace SR.ModRimWorld.RaidExtension
                     faction.Name), MessageTypeDefOf.ThreatSmall));
             stateGraph.AddTransition(transitionLoggingToTakeWoodExit);
             // Surprise attack.
-            if( surpriseTimer.IsSurpriseActive )
+            if( surpriseTimer.IsSurprise )
             {
                 LordToil lordToilAttack = stateGraph.AttachSubgraph(new LordJob_AssaultColony(faction).CreateGraph()).StartingToil;
                 Transition transitionAttack = new Transition(lordToilLogging, lordToilAttack);

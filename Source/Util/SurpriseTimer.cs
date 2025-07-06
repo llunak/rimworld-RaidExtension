@@ -8,21 +8,24 @@ namespace SR.ModRimWorld.RaidExtension;
 
 public class SurpriseTimer
 {
-    private int ticksToSurpriseAttack; // <0 - not surprise attack
-    private const float surpriseChance = 0.1f;
-
-    public bool IsSurpriseActive => ticksToSurpriseAttack >= 0;
+    private int ticksToSurpriseAttack = -1; // <0 - no surprise
 
     private static bool debug = false;
 
-    public void InitSurprise( int maxTicks = 60000 )
+    public void SetIsSurprise( bool isSurprise )
     {
-        bool isSurprise = Rand.Chance(surpriseChance);
         if( !isSurprise )
-        {
             ticksToSurpriseAttack = -1;
+        else
+            ticksToSurpriseAttack = 1; // Will be adjusted by InitTimer().
+    }
+
+    public bool IsSurprise => ticksToSurpriseAttack >= 0;
+
+    public void InitTimer( int maxTicks = 60000 )
+    {
+        if( ticksToSurpriseAttack < 0 )
             return;
-        }
         ticksToSurpriseAttack = Math.Min( maxTicks, (int)(2500f * Rand.Range(1f, 4f)));
     }
 
@@ -30,7 +33,7 @@ public class SurpriseTimer
     {
         if( signal.type != TriggerSignalType.Tick )
             return false;
-        if( debug )
+        if( debug && ticksToSurpriseAttack >= 0 )
         {
             ticksToSurpriseAttack = 10;
             debug = false;

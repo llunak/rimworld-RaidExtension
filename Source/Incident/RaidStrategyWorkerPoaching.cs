@@ -8,6 +8,7 @@
 // ******************************************************************
 // Modified by llunak, l.lunak@centrum.cz .
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -20,7 +21,8 @@ namespace SR.ModRimWorld.RaidExtension
     [UsedImplicitly]
     public class RaidStrategyWorkerPoaching : RaidStrategyWorker
     {
-        public Pawn TempAnimal { get; set; } //目标动物
+        public Pawn animal;
+        public bool isSurprise = false;
 
         /// <summary>
         /// 该策略适用于
@@ -83,6 +85,51 @@ namespace SR.ModRimWorld.RaidExtension
             return true;
         }
 
+        // HACK: Some things related to the incident need to be done late, finding the animal needs
+        // parms.spawnCenter, but that one is resolved fairly late, after calculating raid points.
+        // This function is called after that, so as a hack override this to do late setup.
+        // Also used to carry over the information decided here to the lordjob (it appears it's not easily
+        // possible to decide some additional info in Resolve* functions and than pass it to the lord job,
+        // so it needs a hack one way or another.
+        public override List<Pawn> SpawnThreats(IncidentParms parms)
+        {
+            ResolveLateInfo(parms);
+            return base.SpawnThreats(parms);
+        }
+
+        private void ResolveLateInfo(IncidentParms parms)
+        {
+            if (!(parms.target is Map map))
+            {
+                Log.Error($"{MiscDef.LogTag}target must be a map.");
+                return;
+            }
+            //设置狩猎目标
+            animal = map.FindTargetAnimal(parms.spawnCenter, MiscDef.MinTargetRequireHealthScale);
+            if (animal == null)
+            {
+                Log.Warning($"{MiscDef.LogTag}can't find any animal.");
+                return;
+            }
+
+            isSurprise = Rand.Chance(0.1f);
+            if( isSurprise )
+                parms.points *= 0.8f;
+            else
+            {
+                // If the target is either a colony's animal or it is within the colony,
+                // reduce the raid size somewhat (as in that case it is essentially a direct raid
+                // with no delay and all raiders grouped up, which is harder to defend against).
+                float factor = 1f;
+                if( animal.Faction != null && animal.Faction == Faction.OfPlayer )
+                    factor = 0.8f;
+                if( animal.Position.InBounds( animal.Map ) && animal.Map.areaManager.Home[ animal.Position ] )
+                    factor = 0.8f;
+                parms.points *= factor;
+            }
+            parms.points = Math.Clamp( parms.points, MiscDef.MinThreatPoints, MiscDef.MaxThreatPoints );
+        }
+
         /// <summary>
         /// 创建集群AI工作
         /// </summary>
@@ -96,26 +143,7 @@ namespace SR.ModRimWorld.RaidExtension
             var siegePositionFrom =
                 RCellFinder.FindSiegePositionFrom(parms.spawnCenter.IsValid ? parms.spawnCenter : pawns[0].PositionHeld,
                     map);
-            return new LordJobPoaching(siegePositionFrom, TempAnimal);
-        }
-
-        /// <summary>
-        /// 生成角色
-        /// </summary>
-        /// <param name="parms"></param>
-        /// <returns></returns>
-        public override List<Pawn> SpawnThreats(IncidentParms parms)
-        {
-            var pawnGroupMakerParms =
-                IncidentParmsUtility.GetDefaultPawnGroupMakerParms(PawnGroupKindDefOf.Combat, parms);
-            var pawnList = PawnGroupMakerUtility.GeneratePawns(pawnGroupMakerParms).ToList();
-            if (pawnList.Count == 0)
-            {
-                return pawnList;
-            }
-
-            parms.raidArrivalMode.Worker.Arrive(pawnList, parms);
-            return pawnList;
+            return new LordJobPoaching(siegePositionFrom, animal, isSurprise);
         }
     }
 }

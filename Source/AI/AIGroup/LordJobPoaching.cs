@@ -29,9 +29,10 @@ namespace SR.ModRimWorld.RaidExtension
         {
         }
 
-        public LordJobPoaching(IntVec3 siegeSpot, Pawn targetAnimal) : base(siegeSpot)
+        public LordJobPoaching(IntVec3 siegeSpot, Pawn targetAnimal, bool isSurprise) : base(siegeSpot)
         {
             _targetAnimal = targetAnimal;
+            surpriseTimer.SetIsSurprise( isSurprise );
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace SR.ModRimWorld.RaidExtension
 
         public override StateGraph CreateGraph()
         {
-            surpriseTimer.InitSurprise();
+            surpriseTimer.InitTimer();
             //集群AI流程状态机
             var stateGraph = new StateGraph();
             //添加流程 集结
@@ -69,14 +70,14 @@ namespace SR.ModRimWorld.RaidExtension
             var transitionPoachingToTakePreyExit = new Transition(lordToilPoaching, lordToilTakePreyExit);
             //触发条件 目标猎物被击倒
             var triggerHuntDone = new Trigger_Custom( ( TriggerSignal signal ) => IsHuntDone( signal ));
-            if( !surpriseTimer.IsSurpriseActive )
+            if( !surpriseTimer.IsSurprise )
                 transitionPoachingToTakePreyExit.AddTrigger(triggerHuntDone);
             transitionPoachingToTakePreyExit.AddPreAction(new TransitionAction_Message(
                 "SrTakePreyExit".Translate(faction.def.pawnsPlural.CapitalizeFirst(),
                     faction.Name), MessageTypeDefOf.ThreatSmall));
             stateGraph.AddTransition(transitionPoachingToTakePreyExit);
             // Surprise attack.
-            if( surpriseTimer.IsSurpriseActive )
+            if( surpriseTimer.IsSurprise )
             {
                 LordToil lordToilAttack = stateGraph.AttachSubgraph(new LordJob_AssaultColony(faction).CreateGraph()).StartingToil;
                 Transition transitionAttack = new Transition(lordToilPoaching, lordToilAttack);
