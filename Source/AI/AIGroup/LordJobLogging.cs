@@ -82,6 +82,7 @@ namespace SR.ModRimWorld.RaidExtension
                 Transition transitionAttack = new Transition(lordToilLogging, lordToilAttack);
                 transitionAttack.AddTrigger(new Trigger_Custom( ( TriggerSignal signal ) => surpriseTimer.ActivateOn( signal )));
                 transitionAttack.AddTrigger(triggerTreesCut);
+                transitionAttack.AddTrigger(new Trigger_PawnHarmed(requireInstigatorWithSpecificFaction : Faction.OfPlayer));
                 var label = "SrSurpriseAttackLabel".Translate(faction.Name);
                 var letter = "SrSurpriseAttackLetter".Translate(faction.def.pawnsPlural, faction.Name,
                     Faction.OfPlayer.def.pawnsPlural).CapitalizeFirst();
