@@ -32,6 +32,12 @@ namespace SR.ModRimWorld.RaidExtension
         {
         }
 
+        public override void ExposeData()
+        {
+            base.ExposeData();
+            Scribe_Values.Look(ref numTreesCut, "numTreesCut");
+        }
+
         public override StateGraph CreateGraph()
         {
             //集群AI流程状态机
