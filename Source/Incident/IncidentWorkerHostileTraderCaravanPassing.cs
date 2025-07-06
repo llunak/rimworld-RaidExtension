@@ -47,6 +47,8 @@ namespace SR.ModRimWorld.RaidExtension
         /// <returns></returns>
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
+            float origPoints = parms.points;
+
             var map = (Map) parms.target;
             if(HarmonyUtil.IsSOS2SpaceMap(map))
             {
@@ -63,11 +65,27 @@ namespace SR.ModRimWorld.RaidExtension
                 return false;
             }
 
+            bool isSurprise = Rand.Chance(0.1f);
+            if( isSurprise )
+            {
+                // ResolveParmsPoints() gives hardcoded raid points (TODO?), which may be unsuitable for a raid.
+                // So instead calculate raid points normally, and do not allow a raid if the caravan would be suspiciously small.
+                if( origPoints < 0 )
+                    origPoints = StorytellerUtility.DefaultThreatPointsNow(map);
+                float raidPoints = origPoints * 0.8f;
+                if( raidPoints > 500 ) // TraderCaravanUtility.GenerateGuardPoints() returns at least 550.
+                    parms.points = raidPoints;
+                else
+                    isSurprise = false; // Too small to be a reasonable caravan.
+            }
+
             // Using mere RCellFinder.TryFindTravelDestFrom() simply tries to find a reachable tile on the opposite
             // edge of the map, but it does not care about the colony, resulting in the hostile caravan sometimes
             // walking very close to the base (especially if it's not walled off), which looks silly.
             // First try to find a path that avoids the colony in a reasonable distance.
-            IntVec3 travelDest = PathAvoidsColonistsChecker.FindPathDestination( map, parms.spawnCenter );
+            IntVec3 travelDest = IntVec3.Invalid;
+            if( !isSurprise ) // Unless it's a surprise attack, in which case going closer is fine.
+                travelDest = PathAvoidsColonistsChecker.FindPathDestination( map, parms.spawnCenter );
             if( travelDest == IntVec3.Invalid ) // No luck? Simply try to find a path.
             {
                 if (!RCellFinder.TryFindTravelDestFrom(parms.spawnCenter, map, out travelDest))
@@ -91,7 +109,7 @@ namespace SR.ModRimWorld.RaidExtension
 
             var traderKind = (from pawn in list where pawn.TraderKind != null select pawn.TraderKind).FirstOrDefault();
             SendLetter(parms, list, traderKind);
-            var jobTravelAndExit = new LordJobHostileTraderCaravanTravelAndExit(travelDest);
+            var jobTravelAndExit = new LordJobHostileTraderCaravanTravelAndExit(travelDest, isSurprise);
             LordMaker.MakeNewLord(parms.faction, jobTravelAndExit, map, list);
             return true;
         }
