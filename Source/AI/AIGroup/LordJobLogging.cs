@@ -88,6 +88,7 @@ namespace SR.ModRimWorld.RaidExtension
                 transitionAttack.AddPreAction(new TransitionAction_Letter(label, letter, LetterDefOf.ThreatBig));
                 transitionAttack.AddPostAction(new TransitionAction_EndAllJobs());
                 transitionAttack.AddPostAction(new TransitionAction_WakeAll());
+                transitionAttack.AddPostAction(new TransitionAction_Custom( () => Find.TickManager.slower.SignalForceNormalSpeedShort()));
                 stateGraph.AddTransition(transitionAttack);
             }
             // Handle becoming non-hostile (from LordJob_Siege).
