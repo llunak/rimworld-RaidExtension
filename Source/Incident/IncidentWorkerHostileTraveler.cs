@@ -46,11 +46,17 @@ namespace SR.ModRimWorld.RaidExtension
             if (!TryResolveParms(parms))
                 return false;
 
+            bool isSurprise = Rand.Chance(0.1f);
+            if( isSurprise )
+                parms.points *= 0.8f;
+
             // Using mere RCellFinder.TryFindTravelDestFrom() simply tries to find a reachable tile on the opposite
             // edge of the map, but it does not care about the colony, resulting in the hostile travellers sometimes
             // walking very close to the base (especially if it's not walled off), which looks silly.
             // First try to find a path that avoids the colony in a reasonable distance.
-            IntVec3 travelDest = PathAvoidsColonistsChecker.FindPathDestination( map, parms.spawnCenter );
+            IntVec3 travelDest = IntVec3.Invalid;
+            if( !isSurprise )
+                travelDest = PathAvoidsColonistsChecker.FindPathDestination( map, parms.spawnCenter );
             if( travelDest == IntVec3.Invalid ) // No luck? Simply try to find a path.
             {
                 if (!RCellFinder.TryFindTravelDestFrom(parms.spawnCenter, map, out travelDest))
@@ -64,7 +70,7 @@ namespace SR.ModRimWorld.RaidExtension
             if (list.Count == 0)
                 return false;
 
-            LordJob_TravelAndExit lordJob = new LordJob_TravelAndExit(travelDest);
+            LordJobHostileTravelAndExit lordJob = new LordJobHostileTravelAndExit(travelDest, isSurprise);
             LordMaker.MakeNewLord(parms.faction, lordJob, map, list);
 
             SendLetter(parms, list);
