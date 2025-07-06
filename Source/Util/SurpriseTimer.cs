@@ -13,6 +13,8 @@ public class SurpriseTimer
 
     public bool IsSurpriseActive => ticksToSurpriseAttack >= 0;
 
+    private static bool debug = false;
+
     public void InitSurprise( int maxTicks = 60000 )
     {
         bool isSurprise = Rand.Chance(surpriseChance);
@@ -28,6 +30,11 @@ public class SurpriseTimer
     {
         if( signal.type != TriggerSignalType.Tick )
             return false;
+        if( debug )
+        {
+            ticksToSurpriseAttack = 10;
+            debug = false;
+        }
         if( ticksToSurpriseAttack < 0 )
             return false;
         if( ticksToSurpriseAttack > 0 )
