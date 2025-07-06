@@ -12,6 +12,8 @@ using RimWorld;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SR.ModRimWorld.RaidExtension
 {
@@ -20,11 +22,7 @@ namespace SR.ModRimWorld.RaidExtension
         private static readonly IntRange WaitTime = new IntRange(500, 1000); //集合等待时间
         private Pawn _targetAnimal; //集群AI想要猎杀的动物
 
-        public Pawn TargetAnimal
-        {
-            get => _targetAnimal;
-            set => _targetAnimal = value;
-        }
+        public Pawn TargetAnimal => _targetAnimal;
 
         public LordJobPoaching()
         {
@@ -67,8 +65,8 @@ namespace SR.ModRimWorld.RaidExtension
             //过渡 偷猎到带着猎物离开
             var transitionPoachingToTakePreyExit = new Transition(lordToilPoaching, lordToilTakePreyExit);
             //触发条件 目标猎物被击倒
-            var triggerTargetAnimalDead = new TriggerTargetAnimalDead(_targetAnimal);
-            transitionPoachingToTakePreyExit.AddTrigger(triggerTargetAnimalDead);
+            var triggerHuntDone = new Trigger_Custom( ( TriggerSignal signal ) => IsHuntDone( signal ));
+            transitionPoachingToTakePreyExit.AddTrigger(triggerHuntDone);
             transitionPoachingToTakePreyExit.AddPreAction(new TransitionAction_Message(
                 "SrTakePreyExit".Translate(faction.def.pawnsPlural.CapitalizeFirst(),
                     faction.Name), MessageTypeDefOf.ThreatSmall));
@@ -87,6 +85,45 @@ namespace SR.ModRimWorld.RaidExtension
                 "MessageRaidersLeaving".Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
             stateGraph.AddTransition(transitionNonHostile);
             return stateGraph;
+        }
+
+        private bool IsHuntDone( TriggerSignal signal )
+        {
+            if( signal.type != TriggerSignalType.Tick )
+                return false;
+
+            const int CheckEveryTicks = 100;
+            if( Find.TickManager.TicksGame % CheckEveryTicks != 0 )
+                return false;
+
+            if( !TargetAnimal.Dead )
+                return false;
+
+            if( lord.ownedPawns == null || lord.ownedPawns.Count <= 0 )
+                return false;
+
+            // Check for any similar animals in a radius around the original one.
+            // This serves two purposes:
+            // - Hunt more similar animals in the pack.
+            // - Do not stop the hunt if the pack has gone manhunter.
+            HashSet<ThingDef> acceptableDefs = new HashSet<ThingDef>(TargetAnimal.RaceProps.crossAggroWith
+                .OrElseEmptyEnumerable().Prepend(TargetAnimal.def));
+            foreach (var thing in GenRadial.RadialDistinctThingsAround(TargetAnimal.Position, lord.Map, 20f, true))
+            {
+                if( !(thing is Pawn animal))
+                    continue;
+
+                // Find animals that can aggro together with the original one (Pawn_MindState.GetPackMates()).
+                if( animal == TargetAnimal || !acceptableDefs.Contains(animal.def) || animal.Faction != TargetAnimal.Faction )
+                    continue;
+
+                if( !lord.ownedPawns[0].IsTargetAnimalValid(animal, MiscDef.MinTargetRequireHealthScale))
+                    continue;
+
+                _targetAnimal = animal;
+                return false;
+            }
+            return true;
         }
     }
 }
