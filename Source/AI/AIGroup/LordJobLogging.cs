@@ -23,6 +23,7 @@ namespace SR.ModRimWorld.RaidExtension
         private int numTreesCut = 0;
         private Dictionary< Pawn, Pawn > pawnsToFollowCache = new Dictionary< Pawn, Pawn >();
         private Dictionary< Pawn, ( Thing, int ) > treeForPawnCache = new Dictionary< Pawn, ( Thing, int ) >(); // int = tick
+        SurpriseTimer surpriseTimer = new SurpriseTimer();
 
         public LordJobLogging()
         {
@@ -36,10 +37,12 @@ namespace SR.ModRimWorld.RaidExtension
         {
             base.ExposeData();
             Scribe_Values.Look(ref numTreesCut, "numTreesCut");
+            surpriseTimer.ExposeData();
         }
 
         public override StateGraph CreateGraph()
         {
+            surpriseTimer.InitSurprise( ExitTime );
             //集群AI流程状态机
             var stateGraph = new StateGraph();
             //添加流程 集结
@@ -62,12 +65,29 @@ namespace SR.ModRimWorld.RaidExtension
             var transitionLoggingToTakeWoodExit = new Transition(lordToilLogging, lordToilTakeWoodExit);
             var triggerTicksPassed = new Trigger_TicksPassed(ExitTime);
             var triggerTreesCut = new Trigger_TickCondition( () => IsEnoughTreesCut(), 250 );
-            transitionLoggingToTakeWoodExit.AddTrigger(triggerTicksPassed);
-            transitionLoggingToTakeWoodExit.AddTrigger(triggerTreesCut);
+            if( !surpriseTimer.IsSurpriseActive )
+            {
+                transitionLoggingToTakeWoodExit.AddTrigger(triggerTicksPassed);
+                transitionLoggingToTakeWoodExit.AddTrigger(triggerTreesCut);
+            }
             transitionLoggingToTakeWoodExit.AddPreAction(new TransitionAction_Message(
                 "SrTakeWoodExit".Translate(faction.def.pawnsPlural.CapitalizeFirst(),
                     faction.Name), MessageTypeDefOf.ThreatSmall));
             stateGraph.AddTransition(transitionLoggingToTakeWoodExit);
+            // Surprise attack.
+            if( surpriseTimer.IsSurpriseActive )
+            {
+                LordToil lordToilAttack = stateGraph.AttachSubgraph(new LordJob_AssaultColony(faction).CreateGraph()).StartingToil;
+                Transition transitionAttack = new Transition(lordToilLogging, lordToilAttack);
+                transitionAttack.AddTrigger(new Trigger_Custom( ( TriggerSignal signal ) => surpriseTimer.ActivateOn( signal )));
+                transitionAttack.AddTrigger(triggerTreesCut);
+                var label = "SrSurpriseAttackLabel".Translate(faction.Name);
+                var letter = "SrSurpriseAttackLetter".Translate(faction.def.pawnsPlural, faction.Name,
+                    Faction.OfPlayer.def.pawnsPlural).CapitalizeFirst();
+                transitionAttack.AddPreAction(new TransitionAction_Letter(label, letter, LetterDefOf.ThreatBig));
+                transitionAttack.AddPostAction(new TransitionAction_WakeAll());
+                stateGraph.AddTransition(transitionAttack);
+            }
             // Handle becoming non-hostile (from LordJob_Siege).
             LordToil_ExitMap lordToil_ExitMap = new LordToil_ExitMap(LocomotionUrgency.Jog, canDig: false, interruptCurrentJob: true)
             {

@@ -21,6 +21,7 @@ namespace SR.ModRimWorld.RaidExtension
     {
         private static readonly IntRange WaitTime = new IntRange(500, 1000); //集合等待时间
         private Pawn _targetAnimal; //集群AI想要猎杀的动物
+        SurpriseTimer surpriseTimer = new SurpriseTimer();
 
         public Pawn TargetAnimal => _targetAnimal;
 
@@ -40,10 +41,12 @@ namespace SR.ModRimWorld.RaidExtension
         {
             base.ExposeData();
             Scribe_References.Look(ref _targetAnimal, "_targetAnimal");
+            surpriseTimer.ExposeData();
         }
 
         public override StateGraph CreateGraph()
         {
+            surpriseTimer.InitSurprise();
             //集群AI流程状态机
             var stateGraph = new StateGraph();
             //添加流程 集结
@@ -66,11 +69,26 @@ namespace SR.ModRimWorld.RaidExtension
             var transitionPoachingToTakePreyExit = new Transition(lordToilPoaching, lordToilTakePreyExit);
             //触发条件 目标猎物被击倒
             var triggerHuntDone = new Trigger_Custom( ( TriggerSignal signal ) => IsHuntDone( signal ));
-            transitionPoachingToTakePreyExit.AddTrigger(triggerHuntDone);
+            if( !surpriseTimer.IsSurpriseActive )
+                transitionPoachingToTakePreyExit.AddTrigger(triggerHuntDone);
             transitionPoachingToTakePreyExit.AddPreAction(new TransitionAction_Message(
                 "SrTakePreyExit".Translate(faction.def.pawnsPlural.CapitalizeFirst(),
                     faction.Name), MessageTypeDefOf.ThreatSmall));
             stateGraph.AddTransition(transitionPoachingToTakePreyExit);
+            // Surprise attack.
+            if( surpriseTimer.IsSurpriseActive )
+            {
+                LordToil lordToilAttack = stateGraph.AttachSubgraph(new LordJob_AssaultColony(faction).CreateGraph()).StartingToil;
+                Transition transitionAttack = new Transition(lordToilPoaching, lordToilAttack);
+                transitionAttack.AddTrigger(new Trigger_Custom( ( TriggerSignal signal ) => ShouldSurpriseAttack( signal )));
+                transitionAttack.AddTrigger(triggerHuntDone);
+                var label = "SrSurpriseAttackLabel".Translate(faction.Name);
+                var letter = "SrSurpriseAttackLetter".Translate(faction.def.pawnsPlural, faction.Name,
+                    Faction.OfPlayer.def.pawnsPlural).CapitalizeFirst();
+                transitionAttack.AddPreAction(new TransitionAction_Letter(label, letter, LetterDefOf.ThreatBig));
+                transitionAttack.AddPostAction(new TransitionAction_WakeAll());
+                stateGraph.AddTransition(transitionAttack);
+            }
             // Handle becoming non-hostile (from LordJob_Siege).
             LordToil_ExitMap lordToil_ExitMap = new LordToil_ExitMap(LocomotionUrgency.Jog, canDig: false, interruptCurrentJob: true)
             {
@@ -124,6 +142,34 @@ namespace SR.ModRimWorld.RaidExtension
                 return false;
             }
             return true;
+        }
+
+        private bool ShouldSurpriseAttack( TriggerSignal signal )
+        {
+            if( !surpriseTimer.ActivateOn( signal )) // Still ticking.
+                return false;
+            // Do not start the attack while the hunted animal is maddened.
+            if( IsManhunter( TargetAnimal ))
+                return false;
+            // Or if there is another maddened animal in the vicinity.
+            foreach (var thing in GenRadial.RadialDistinctThingsAround(TargetAnimal.Position, lord.Map, 30f, true))
+            {
+                if( !(thing is Pawn animal))
+                    continue;
+
+                if( IsManhunter( animal ))
+                {
+                    surpriseTimer.Delay( 2500 ); // Wait for the pawns to deal with the manhunters (performance, avoid repeated check).
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static bool IsManhunter( Pawn animal )
+        {
+            // Ignore MentalStateDefOf.ManhunterPermanent, this checks if the animal got maddened by the hunt.
+            return animal.InMentalState && animal.MentalStateDef == MentalStateDefOf.Manhunter;
         }
     }
 }
