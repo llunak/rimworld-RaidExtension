@@ -112,7 +112,7 @@ namespace SR.ModRimWorld.RaidExtension
                 return;
             }
 
-            isSurprise = Rand.Chance(0.1f);
+            isSurprise = this is RaidStrategyWorkerPoachingSurprise;
             if( isSurprise )
                 parms.points *= 0.8f;
             else
@@ -145,5 +145,9 @@ namespace SR.ModRimWorld.RaidExtension
                     map);
             return new LordJobPoaching(siegePositionFrom, animal, isSurprise);
         }
+    }
+
+    public class RaidStrategyWorkerPoachingSurprise : RaidStrategyWorkerPoaching
+    {
     }
 }

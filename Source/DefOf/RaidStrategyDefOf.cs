@@ -18,5 +18,7 @@ namespace SR.ModRimWorld.RaidExtension
     {
         [UsedImplicitly] public static readonly RaidStrategyDef SrLogging; //伐木
         [UsedImplicitly] public static readonly RaidStrategyDef SrPoaching; //偷猎
+        [UsedImplicitly] public static readonly RaidStrategyDef SrLoggingSurprise;
+        [UsedImplicitly] public static readonly RaidStrategyDef SrPoachingSurprise;
     }
 }

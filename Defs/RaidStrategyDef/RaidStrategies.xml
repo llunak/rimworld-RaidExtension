@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Defs>
     <!--伐木-->
-    <RaidStrategyDef>
+    <RaidStrategyDef Name="RaidStrategyDefSrLogging">
         <defName>SrLogging</defName>
         <workerClass>SR.ModRimworld.RaidExtension.RaidStrategyWorkerLogging</workerClass>
         <selectionWeightPerPointsCurve>
@@ -20,8 +20,12 @@
         <letterLabelEnemy>Logging</letterLabelEnemy>
         <arrivalTextEnemy>They plan to log wood nearby.</arrivalTextEnemy>
     </RaidStrategyDef>
+    <RaidStrategyDef ParentName="RaidStrategyDefSrLogging">
+        <defName>SrLoggingSurprise</defName>
+        <workerClass>SR.ModRimworld.RaidExtension.RaidStrategyWorkerLoggingSurprise</workerClass>
+    </RaidStrategyDef>
     <!--偷猎-->
-    <RaidStrategyDef>
+    <RaidStrategyDef Name="RaidStrategyDefSrPoaching">
         <defName>SrPoaching</defName>
         <workerClass>SR.ModRimworld.RaidExtension.RaidStrategyWorkerPoaching</workerClass>
         <selectionWeightPerPointsCurve>
@@ -39,5 +43,9 @@
         </arriveModes>
         <letterLabelEnemy>Poaching</letterLabelEnemy>
         <arrivalTextEnemy>They plan to poach nearby.</arrivalTextEnemy>
+    </RaidStrategyDef>
+    <RaidStrategyDef ParentName="RaidStrategyDefSrPoaching">
+        <defName>SrPoachingSurprise</defName>
+        <workerClass>SR.ModRimworld.RaidExtension.RaidStrategyWorkerPoachingSurprise</workerClass>
     </RaidStrategyDef>
 </Defs>

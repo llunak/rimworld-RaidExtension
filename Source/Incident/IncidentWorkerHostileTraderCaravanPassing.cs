@@ -65,7 +65,7 @@ namespace SR.ModRimWorld.RaidExtension
                 return false;
             }
 
-            bool isSurprise = Rand.Chance(0.1f);
+            bool isSurprise = this is IncidentWorkerHostileTraderCaravanPassingSurprise;
             if( isSurprise )
             {
                 // ResolveParmsPoints() gives hardcoded raid points (TODO?), which may be unsuitable for a raid.
@@ -76,7 +76,7 @@ namespace SR.ModRimWorld.RaidExtension
                 if( raidPoints > 500 ) // TraderCaravanUtility.GenerateGuardPoints() returns at least 550.
                     parms.points = raidPoints;
                 else
-                    isSurprise = false; // Too small to be a reasonable caravan.
+                    return false; // Too small to be a reasonable caravan.
             }
 
             // Using mere RCellFinder.TryFindTravelDestFrom() simply tries to find a reachable tile on the opposite
@@ -144,5 +144,9 @@ namespace SR.ModRimWorld.RaidExtension
         {
             parms.points = TraderCaravanUtility.GenerateGuardPoints() * 2;
         }
+    }
+
+    public class IncidentWorkerHostileTraderCaravanPassingSurprise : IncidentWorkerHostileTraderCaravanPassing
+    {
     }
 }

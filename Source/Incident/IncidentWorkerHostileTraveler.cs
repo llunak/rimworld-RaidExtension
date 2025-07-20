@@ -46,7 +46,7 @@ namespace SR.ModRimWorld.RaidExtension
             if (!TryResolveParms(parms))
                 return false;
 
-            bool isSurprise = Rand.Chance(0.1f);
+            bool isSurprise = this is IncidentWorkerHostileTravelerSurprise;
             if( isSurprise )
                 parms.points *= 0.8f;
 
@@ -99,5 +99,9 @@ namespace SR.ModRimWorld.RaidExtension
                 "LetterRelatedPawnsNeutralGroup".Translate((NamedArgument) Faction.OfPlayer.def.pawnsPlural), true);
             SendStandardLetter(letterLabel, letterText, LetterDefOf.ThreatSmall, parms, pawns);
         }
+    }
+
+    public class IncidentWorkerHostileTravelerSurprise : IncidentWorkerHostileTraveler
+    {
     }
 }

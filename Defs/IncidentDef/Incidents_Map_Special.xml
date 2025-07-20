@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Defs>
-    <IncidentDef>
+    <IncidentDef Name="SrPoaching">
         <defName>SrPoaching</defName>
         <label>Poaching</label>
         <targetTags>
@@ -12,7 +12,13 @@
         <pointsScaleable>true</pointsScaleable>
         <requireColonistsPresent>false</requireColonistsPresent>
     </IncidentDef>
-    <IncidentDef>
+    <IncidentDef ParentName="SrPoaching">
+        <defName>SrPoachingSurprise</defName>
+        <workerClass>SR.ModRimworld.RaidExtension.IncidentWorkerPoachingSurprise</workerClass>
+        <category>ThreatBig</category>
+        <baseChance>0.08</baseChance>
+    </IncidentDef>
+    <IncidentDef Name="SrLogging">
         <defName>SrLogging</defName>
         <label>Logging</label>
         <targetTags>
@@ -24,7 +30,13 @@
         <pointsScaleable>true</pointsScaleable>
         <requireColonistsPresent>false</requireColonistsPresent>
     </IncidentDef>
-    <IncidentDef>
+    <IncidentDef ParentName="SrLogging">
+        <defName>SrLoggingSurprise</defName>
+        <workerClass>SR.ModRimworld.RaidExtension.IncidentWorkerLoggingSurprise</workerClass>
+        <category>ThreatBig</category>
+        <baseChance>0.08</baseChance>
+    </IncidentDef>
+    <IncidentDef Name="SrHositleTraveler">
         <defName>SrHositleTraveler</defName>
         <label>Lost Raider</label>
         <targetTags>
@@ -36,7 +48,13 @@
         <pointsScaleable>true</pointsScaleable>
         <requireColonistsPresent>True</requireColonistsPresent>
     </IncidentDef>
-    <IncidentDef>
+    <IncidentDef ParentName="SrHositleTraveler">
+        <defName>SrHositleTravelerSurprise</defName>
+        <workerClass>SR.ModRimworld.RaidExtension.IncidentWorkerHostileTravelerSurprise</workerClass>
+        <category>ThreatBig</category>
+        <baseChance>0.1</baseChance>
+    </IncidentDef>
+    <IncidentDef Name="SrHositleCaravanPassing">
         <defName>SrHositleCaravanPassing</defName>
         <label>Hostile Caravan Passing By</label>
         <targetTags>
@@ -47,5 +65,11 @@
         <baseChance>1</baseChance>
         <pointsScaleable>true</pointsScaleable>
         <requireColonistsPresent>false</requireColonistsPresent>
+    </IncidentDef>
+    <IncidentDef ParentName="SrHositleCaravanPassing">
+        <defName>SrHositleCaravanPassingSurprise</defName>
+        <workerClass>SR.ModRimworld.RaidExtension.IncidentWorkerHostileTraderCaravanPassingSurprise</workerClass>
+        <category>ThreatBig</category>
+        <baseChance>0.1</baseChance>
     </IncidentDef>
 </Defs>

@@ -131,4 +131,12 @@ namespace SR.ModRimWorld.RaidExtension
                 Array.Empty<NamedArgument>());
         }
     }
+
+    public class IncidentWorkerPoachingSurprise : IncidentWorkerPoaching
+    {
+        public override void ResolveRaidStrategy(IncidentParms parms, PawnGroupKindDef groupKind)
+        {
+            parms.raidStrategy = RaidStrategyDefOf.SrPoachingSurprise;
+        }
+    }
 }

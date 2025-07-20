@@ -91,4 +91,12 @@ namespace SR.ModRimWorld.RaidExtension
             return LetterDefOf.ThreatSmall;
         }
     }
+
+    public class IncidentWorkerLoggingSurprise : IncidentWorkerLogging
+    {
+        public override void ResolveRaidStrategy(IncidentParms parms, PawnGroupKindDef groupKind)
+        {
+            parms.raidStrategy = RaidStrategyDefOf.SrLoggingSurprise;
+        }
+    }
 }

@@ -65,7 +65,7 @@ namespace SR.ModRimWorld.RaidExtension
 
         private void ResolveLateInfo(IncidentParms parms)
         {
-            isSurprise = Rand.Chance(0.1f);
+            isSurprise = this is RaidStrategyWorkerLoggingSurprise;
             if( isSurprise )
                 parms.points *= 0.8f;
             else
@@ -94,5 +94,9 @@ namespace SR.ModRimWorld.RaidExtension
                     map);
             return new LordJobLogging(siegePositionFrom, isSurprise);
         }
+    }
+
+    public class RaidStrategyWorkerLoggingSurprise : RaidStrategyWorkerLogging
+    {
     }
 }
